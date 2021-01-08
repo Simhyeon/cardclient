@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>WebSocket Test</title>
+	</head>
+	<body>
+		<h2>WebSocket Test</h2>
+
+		<div id="state" style="color: red; font-weight: bold; font-size: 30px; margin-bottom: 15px;">State</div>
+		<div id="wrapper" style="display: flex;">
+			<div id="information" style="flex: 0 1 auto;">
+				<div id="interaction">
+					<button id="conn">Connect</button>
+					<button id="dis">Disconnect</button>
+					<span style="margin-left: 20px;">Time Left : </span>
+					<span id="count" style="margin-left: 15px;">0</span>
+					<br>
+					<br>
+					<button id="check">Check</button>
+					<button id="raise">Raise</button>
+					<button id="fold">Fold</button>
+					<button id="msg">Ping</button>
+				</div>
+
+				<label>URL</label>
+				<br>
+				<textarea id="url" name="Name" rows="2" cols="20">ws://localhost:3030/create</textarea>
+			</div>
+			<div id="cards"  style="padding-left: 50px;">
+				<span>Hp :</span><div id="hp"></div>
+				<span>Total bets :</span><div id="hp"></div>
+				<span>Community cards : </span><div id ="community"></div>
+				<span>Hand cards : </span><div id ="hand"></div>
+			</div>
+		</div>
+		<br>
+		<br>
+		<div id="output"></div>
+
+		<script src="index.js"></script>
+	</body>
+</html> 
