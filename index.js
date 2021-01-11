@@ -1,5 +1,8 @@
 // CONSTS
 const BETTIME = 14;
+const HP = 30;
+
+// TODO Make class instance which includes all variables below.
 
 // Global or say client local variables.
 let timerId;
@@ -13,9 +16,13 @@ let community = new Array();
 let debug_comm;
 let hand = new Array();
 
+let current_hp = HP;
+
 // VARIABLES
 // Element caches.
 // >>>--------------------------------------------
+let hpDiv = document.querySelector("#hp");
+let betsDiv = document.querySelector("#bets");
 let stateDiv = document.querySelector("#state");
 let timerCount = document.querySelector("#count");
 let outputDiv = document.querySelector("#output");
@@ -88,6 +95,7 @@ function init()
 	// Initialization
 	disableButtons(true);
 	disBtn.disabled = true;
+	hpDiv.textContent = HP;
 }
 
 function createSocket()
@@ -101,10 +109,20 @@ function createSocket()
 
 function onOpen(evt)
 {
+	reset();
 	writeToScreen("CONNECTED");
 	connBtn.disabled = true;
 	disBtn.disabled = false;
 	//doSend("WebSocket rocks");
+}
+
+function reset() {
+	outputDiv.textContent = '';
+	community = new Array();
+	hand = new Array();
+	state = "";
+	state_id = "";
+	raiseToCall = false;
 }
 
 function onError(evt)
@@ -124,15 +142,18 @@ function onClose(evt)
 function onMessage(evt)
 {
 	writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
-	let json = JSON.parse(evt.data);
+	console.log(evt.data);
+	let json;
+	try {
+		json = JSON.parse(evt.data);
+	} catch {
+		// Received non json message;
+		return;
+	}
 	switch (json.response_type) {
 		// Save State
 		case 'State':
-			state = json.value.State[0];
-			state_id = json.value.State[1];
-			stateDiv.textContent = state;
-			timeOut();
-			disableButtons(false);
+			updateState(json.value);
 			break;
 		case 'Community':
 			console.log(json.value);
@@ -148,9 +169,19 @@ function onMessage(evt)
 			raiseBtn.textContent = "Call";
 			raiseBtn.disabled = false;
 			raiseToCall = true;
+			checkBtn.disabled = true;
 			break;
 		case 'Delay':
 			timeOut();
+			break;
+		case 'BetResult':
+			betsDiv.textContent = json.value.BetResult.total_bet;
+			break;
+		case 'RoundResult':
+			var result = json.value.RoundResult;
+			current_hp = result.hp;
+			hpDiv.textContent = current_hp;
+			// TODO ::: Log informations 
 			break;
 		
 		default:
@@ -159,6 +190,22 @@ function onMessage(evt)
 	// DEBUG
 	// This is to be debuggfed from browser
 	debug_cache = evt.data;
+}
+
+function updateState(stateObject) {
+	raiseBtn.textContent = "Raise";
+	state = stateObject.State[0];
+	state_id = stateObject.State[1];
+	stateDiv.textContent = state;
+	clearInterval(timerId);
+	// Ignore timeout when showdown.
+	if (state === "ShowDown") {
+		timerCount.textContent = "Showdown";
+		reset();
+	} else {
+		timeOut();
+		disableButtons(false);
+	}
 }
 
 function disableButtons(bool) {
@@ -170,14 +217,14 @@ function disableButtons(bool) {
 function timeOut() {
 	// it should be undefined if it's first to using timeOut
 	clearInterval(timerId);
+	timerCount.textContent = "Showdown";
 	timerCount.textContent = BETTIME;
 	timerId = setInterval(displayTime, 1000);
 }
 
 // communiyCards : any[]
 function updateCommunity(communityCards) {
-	// TODO make this work
-	debug_comm = communityCards;
+	communityDiv.textContent = '';
 	community = community.concat(communityCards);
 	community.forEach((card) => {
 		console.log(card);
@@ -187,7 +234,7 @@ function updateCommunity(communityCards) {
 
 // handCards : any[]
 function updateHand(handCards) {
-	// TODO make this work
+	handDiv.textContent = '';
 	hand = hand.concat(handCards);
 	hand.forEach((card) => {
 		handDiv.appendChild(getCardElem(card));
@@ -197,6 +244,24 @@ function updateHand(handCards) {
 function getCardElem(cardObject) {
 	let elem = document.createElement("div");
 	elem.textContent = cardObject.card_type + " / " + cardObject.number;
+	switch (cardObject.card_type) {
+		// Cases are all pascal case
+		case 'Spade':
+			elem.style= "color: #303030;";
+			break;
+		case 'Heart':
+			elem.style= "color: red;";
+			break;
+		case 'Diamond':
+			elem.style= "color: darkblue;";
+			break;
+		case 'Clover':
+			elem.style= "color: darkgreen;";
+			break;
+		
+		default:
+			break;
+	}
 	return elem;
 }
 

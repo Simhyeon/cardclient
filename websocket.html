@@ -3,6 +3,11 @@
 	<head>
 		<meta charset="utf-8"/>
 		<title>WebSocket Test</title>
+		<style type="text/css" media="screen">
+			html,body {
+				height: 100%;
+			}
+		</style>
 	</head>
 	<body>
 		<h2>WebSocket Test</h2>
@@ -28,15 +33,20 @@
 				<textarea id="url" name="Name" rows="2" cols="20">ws://localhost:3030/create</textarea>
 			</div>
 			<div id="cards"  style="padding-left: 50px;">
-				<span>Hp :</span><div id="hp"></div>
-				<span>Total bets :</span><div id="hp"></div>
-				<span>Community cards : </span><div id ="community"></div>
-				<span>Hand cards : </span><div id ="hand"></div>
+				<span style="font-weight: bold;">Hp :</span><span id="hp"> </span><br/>
+				<span style="font-weight: bold;">Total bets :</span><span id="bets"></span><br/>
+				<hr>
+				<span style="font-weight: bold;">Community cards : </span><div id ="community"></div>
+				<hr>
+				<span style="font-weight: bold;">Hand cards : </span><div id ="hand"></div>
+				<hr>
 			</div>
 		</div>
 		<br>
 		<br>
-		<div id="output"></div>
+		<div id="outputWrapper" style="overflow: auto; height: 50%">
+			<div id="output" style="height: 100%;"></div>
+		</div>
 
 		<script src="index.js"></script>
 	</body>
