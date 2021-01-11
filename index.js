@@ -26,6 +26,7 @@ let betsDiv = document.querySelector("#bets");
 let stateDiv = document.querySelector("#state");
 let timerCount = document.querySelector("#count");
 let outputDiv = document.querySelector("#output");
+let logDiv = document.querySelector("#log");
 
 let communityDiv = document.querySelector("#community");
 let handDiv = document.querySelector("#hand");
@@ -137,6 +138,7 @@ function onClose(evt)
 	disableButtons(true);
 	connBtn.disabled = false;
 	disBtn.disabled = true;
+	logDiv.textContent = "";
 }
 
 function onMessage(evt)
@@ -170,18 +172,34 @@ function onMessage(evt)
 			raiseBtn.disabled = false;
 			raiseToCall = true;
 			checkBtn.disabled = true;
+			displayLog("Opponent has raised. Call?")
 			break;
 		case 'Delay':
 			timeOut();
 			break;
 		case 'BetResult':
 			betsDiv.textContent = json.value.BetResult.total_bet;
+			displayLog("Opponent's action : " + json.value.BetResult.opponent_action);
 			break;
 		case 'RoundResult':
 			var result = json.value.RoundResult;
 			current_hp = result.hp;
 			hpDiv.textContent = current_hp;
+
+			let logString = "";
 			// TODO ::: Log informations 
+			if ( result.win === null ) {
+				logString += "Draw\n";
+			} else if (result.win) {
+				logString += "You've won\n";
+			} else {
+				logString += "You've lost\n";
+			}
+
+			logString += "You played : " + result.comb + "\n";
+			logString += "Opponent played : " + result.opp_comb + "\n";
+
+			displayLog(logString);
 			break;
 		
 		default:
@@ -190,6 +208,11 @@ function onMessage(evt)
 	// DEBUG
 	// This is to be debuggfed from browser
 	debug_cache = evt.data;
+}
+
+function displayLog(text) {
+	logDiv.textContent = text;
+	logDiv.innerHTML = logDiv.innerHTML.replace(/\n\r?/g, '<br />');
 }
 
 function updateState(stateObject) {

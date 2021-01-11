@@ -7,6 +7,10 @@
 			html,body {
 				height: 100%;
 			}
+			
+			hr {
+				border-color: #ffffff;
+			}
 		</style>
 	</head>
 	<body>
@@ -31,6 +35,10 @@
 				<label>URL</label>
 				<br>
 				<textarea id="url" name="Name" rows="2" cols="20">ws://localhost:3030/create</textarea>
+				<hr>
+				<div id="logWrapper" style="overflow: auto; height: 80px; border: 1px solid gray">
+					<div id="log" style="height: 100%;"></div>
+				</div>
 			</div>
 			<div id="cards"  style="padding-left: 50px;">
 				<span style="font-weight: bold;">Hp :</span><span id="hp"> </span><br/>
