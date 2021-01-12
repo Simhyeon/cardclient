@@ -1,6 +1,7 @@
-// CONSTS
-const BETTIME = 14;
-const HP = 30;
+// Env variables
+// This is updated from server.
+let bet_time = 14;
+let default_hp = 30;
 
 // TODO Make class instance which includes all variables below.
 
@@ -16,12 +17,14 @@ let community = new Array();
 let debug_comm;
 let hand = new Array();
 
-let current_hp = HP;
+let opp_hp;
+let current_hp;
 
 // VARIABLES
 // Element caches.
 // >>>--------------------------------------------
 let hpDiv = document.querySelector("#hp");
+let oppHpDiv = document.querySelector("#oppHp");
 let betsDiv = document.querySelector("#bets");
 let stateDiv = document.querySelector("#state");
 let timerCount = document.querySelector("#count");
@@ -96,7 +99,7 @@ function init()
 	// Initialization
 	disableButtons(true);
 	disBtn.disabled = true;
-	hpDiv.textContent = HP;
+	//hpDiv.textContent = default_hp;
 }
 
 function createSocket()
@@ -114,11 +117,10 @@ function onOpen(evt)
 	writeToScreen("CONNECTED");
 	connBtn.disabled = true;
 	disBtn.disabled = false;
-	//doSend("WebSocket rocks");
+	clearLog();
 }
 
 function reset() {
-	outputDiv.textContent = '';
 	community = new Array();
 	hand = new Array();
 	state = "";
@@ -133,12 +135,12 @@ function onError(evt)
 
 function onClose(evt)
 {
+	console.log("DISCONNECTED");
 	writeToScreen("DISCONNECTED");
 	clearInterval(timerId);
 	disableButtons(true);
 	connBtn.disabled = false;
 	disBtn.disabled = true;
-	logDiv.textContent = "";
 }
 
 function onMessage(evt)
@@ -154,6 +156,14 @@ function onMessage(evt)
 	}
 	switch (json.response_type) {
 		// Save State
+		case 'Env':
+			default_hp = json.value.Env.hp;
+			bet_time = json.value.Env.bet_time - 1;
+			current_hp = default_hp;
+			opp_hp = default_hp;
+			hpDiv.textContent = current_hp;
+			oppHpDiv.textContent = opp_hp;
+			break;
 		case 'State':
 			updateState(json.value);
 			break;
@@ -183,36 +193,66 @@ function onMessage(evt)
 			break;
 		case 'RoundResult':
 			var result = json.value.RoundResult;
+			opp_hp = result.opp_hp;
 			current_hp = result.hp;
+			oppHpDiv.textContent = opp_hp;
 			hpDiv.textContent = current_hp;
 
 			let logString = "";
 			// TODO ::: Log informations 
 			if ( result.win === null ) {
-				logString += "Draw\n";
+				logString += "Draw<br/>";
 			} else if (result.win) {
-				logString += "You've won\n";
+				logString += "You've won<br/>";
 			} else {
-				logString += "You've lost\n";
+				logString += "You've lost";
+				if (result.fold) {
+					logString += "(Fold)<br/>";
+				} else {
+					logString += "<br/>";
+				}
 			}
 
-			logString += "You played : " + result.comb + "\n";
-			logString += "Opponent played : " + result.opp_comb + "\n";
+			if (!result.fold) 
+				logString += "You played : " + result.comb + "<br/>";
+			if (!result.opp_fold) {
+				logString += "Opponent played : " + result.opp_comb + "<br/>";
+			} else {
+				logString += "Opponent folded.<br/>";
+			}
 
 			displayLog(logString);
+			break;
+
+		case 'GameResult':
+			if (json.value.GameResult) {
+				displayLog("You won a game!", true);
+			} else {
+				displayLog("You lost a game", true);
+			}
+			// Disable timer
+			clearInterval(timerId);
+
 			break;
 		
 		default:
 			break;
 	}
-	// DEBUG
-	// This is to be debuggfed from browser
-	debug_cache = evt.data;
+	//// DEBUG
+	//// This is to be debugged from browser
+	//debug_cache = evt.data;
 }
 
-function displayLog(text) {
-	logDiv.textContent = text;
-	logDiv.innerHTML = logDiv.innerHTML.replace(/\n\r?/g, '<br />');
+function displayLog(text, additive = false) {
+	if (additive) {
+		logDiv.innerHTML += text;
+	} else {
+		logDiv.innerHTML = text;
+	}
+}
+
+function clearLog() {
+	logDiv.innerHTML = "";
 }
 
 function updateState(stateObject) {
@@ -224,8 +264,13 @@ function updateState(stateObject) {
 	// Ignore timeout when showdown.
 	if (state === "ShowDown") {
 		timerCount.textContent = "Showdown";
+		disableButtons(true);
 		reset();
-	} else {
+	} 
+	else {
+		if (state === "Flop") {
+			outputDiv.textContent = "";
+		}
 		timeOut();
 		disableButtons(false);
 	}
@@ -241,7 +286,7 @@ function timeOut() {
 	// it should be undefined if it's first to using timeOut
 	clearInterval(timerId);
 	timerCount.textContent = "Showdown";
-	timerCount.textContent = BETTIME;
+	timerCount.textContent = bet_time;
 	timerId = setInterval(displayTime, 1000);
 }
 
