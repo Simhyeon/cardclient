@@ -1,20 +1,23 @@
+'use strict'
+
 // Env variables
 // This is updated from server.
 let bet_time = 14;
 let default_hp = 30;
+const CREATE_ADDRESS = "ws://localhost:3030/create";
+const JOIN_ADDRESS = "ws://localhost:3030/join/";
 
 // TODO Make class instance which includes all variables below.
 
 // Global or say client local variables.
+let event_log;
 let timerId;
 let websocket;
 let wsUri;
-let debug_cache;
 let state = "";
 let state_id = "";
 let raiseToCall = false;
 let community = new Array();
-let debug_comm;
 let hand = new Array();
 
 let opp_hp;
@@ -34,21 +37,39 @@ let logDiv = document.querySelector("#log");
 let communityDiv = document.querySelector("#community");
 let handDiv = document.querySelector("#hand");
 
-let connBtn = document.querySelector("#conn");
+let createBtn = document.querySelector("#create");
+let joinBtn = document.querySelector("#join");
 let disBtn = document.querySelector("#dis");
+let roomIdDiv = document.querySelector("#roomId");
 
 let checkBtn = document.querySelector("#check");
 let raiseBtn = document.querySelector("#raise");
 let foldBtn = document.querySelector("#fold");
-let msgBtn = document.querySelector("#msg");
 // --------------------------------------------<<<
 
 // EVENT
 // Event listeners
 // >>>--------------------------------------------
-connBtn.addEventListener('click', () => {
-	wsUri = document.querySelector("#url").value;
+createBtn.addEventListener('click', ()=> {
+	joinBtn.disabled = true;
+	wsUri = CREATE_ADDRESS;
 	createSocket();
+	displayLog("Connected to room");
+}, false);
+
+joinBtn.addEventListener('click', () => {
+	// TODO 
+	// If roomId is not empty, try connect
+	// If not deny.
+	if (roomIdDiv.value === "") {
+		displayLog("No roomId is given to join");
+		return;
+	}
+	clearLog();
+	let roomId = roomIdDiv.value;
+	wsUri = JOIN_ADDRESS + roomId;
+	createSocket();
+	displayLog("Connected to room");
 });
 
 disBtn.addEventListener('click', () => {
@@ -80,11 +101,6 @@ foldBtn.addEventListener('click', () => {
 	websocket.send(JSON.stringify(obj));
 });
 
-msgBtn.addEventListener('click', () => {
-	let obj = CreateRequest("Message", null);
-	disableButtons(true);
-	websocket.send(JSON.stringify(obj));
-});
 // --------------------------------------------<<<
 
 function CreateRequest(action, value) {
@@ -114,10 +130,12 @@ function createSocket()
 function onOpen(evt)
 {
 	reset();
-	writeToScreen("CONNECTED");
-	connBtn.disabled = true;
+	writeToBackLog("CONNECTED");
+	createBtn.disabled = true;
+	joinBtn.disabled = true;
 	disBtn.disabled = false;
 	clearLog();
+	displayLog("Connected to game");
 }
 
 function reset() {
@@ -130,22 +148,26 @@ function reset() {
 
 function onError(evt)
 {
-	writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+	writeToBackLog('<span style="color: red;">ERROR:</span> ' + evt.data);
+	displayLog("Failed to connect to server");
 }
 
 function onClose(evt)
 {
 	console.log("DISCONNECTED");
-	writeToScreen("DISCONNECTED");
+	writeToBackLog("DISCONNECTED");
+	displayLog("Disconnected", true);
 	clearInterval(timerId);
 	disableButtons(true);
-	connBtn.disabled = false;
+	createBtn.disabled = false;
+	joinBtn.disabled = false;
 	disBtn.disabled = true;
+	roomIdDiv.readOnly = false;
 }
 
 function onMessage(evt)
 {
-	writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+	writeToBackLog('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
 	console.log(evt.data);
 	let json;
 	try {
@@ -156,6 +178,10 @@ function onMessage(evt)
 	}
 	switch (json.response_type) {
 		// Save State
+		case 'RoomId':
+			roomIdDiv.value = json.value.Message;
+			roomIdDiv.readOnly = true;
+			break;
 		case 'Env':
 			default_hp = json.value.Env.hp;
 			bet_time = json.value.Env.bet_time - 1;
@@ -175,6 +201,10 @@ function onMessage(evt)
 			updateHand(json.value.Card)
 			break;
 		case 'Message':
+			break;
+		case 'Error':
+			clearLog();
+			displayLog(json.value.Message);
 			break;
 		case 'Raise':
 			timeOut();
@@ -245,7 +275,7 @@ function onMessage(evt)
 
 function displayLog(text, additive = false) {
 	if (additive) {
-		logDiv.innerHTML += text;
+		logDiv.innerHTML += "<br/> " + text;
 	} else {
 		logDiv.innerHTML = text;
 	}
@@ -343,7 +373,7 @@ function displayTime() {
 	}
 }
 
-function writeToScreen(message)
+function writeToBackLog(message)
 {
 	var pre = document.createElement("p");
 	pre.style.wordWrap = "break-word";

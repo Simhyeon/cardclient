@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8"/>
-		<title>WebSocket Test</title>
+		<title>Card game</title>
 		<style type="text/css" media="screen">
 			html,body {
 				height: 100%;
@@ -14,36 +14,43 @@
 			hr {
 				border-color: #ffffff;
 			}
+
+			.netBtn {
+				height: 30px;
+				width: 150px;
+			}
 		</style>
 	</head>
 	<body>
-		<h2 style="margin-top: 0; padding-top: 19.92px;">WebSocket Test</h2>
+		<h2 style="margin-top: 0; padding-top: 19.92px;">Card game</h2>
 
 		<div id="state" style="color: red; font-weight: bold; font-size: 30px; margin-bottom: 15px;">State</div>
 		<div id="wrapper" style="display: flex;">
 			<div id="information" style="flex: 0 1 auto;">
 				<div id="interaction">
-					<button id="conn">Connect</button>
-					<button id="dis">Disconnect</button>
-					<span style="margin-left: 20px;">Time Left : </span>
-					<span id="count" style="margin-left: 15px;">0</span>
+					<button id="create" class="netBtn">Create Room</button>
+					<br/>
+					<button id="join" class="netBtn">Join Room</button>
+					<input class="netBtn" type="text" id="roomId" placeholder="Enter room id..."/>
+					<br/>
+					<button id="dis" class="netBtn">Disconnect</button>
 					<br>
 					<br>
 					<button id="check">Check</button>
 					<button id="raise">Raise</button>
 					<button id="fold">Fold</button>
-					<button id="msg">Ping</button>
 				</div>
 
-				<label>URL</label>
-				<br>
-				<textarea id="url" name="Name" rows="2" cols="20">ws://localhost:3030/create</textarea>
 				<hr>
 				<div id="logWrapper" style="overflow: auto; height: 100px; border: 1px solid gray">
 					<div id="log" style="height: 100%;"></div>
 				</div>
 			</div>
 			<div id="cards"  style="padding-left: 50px;">
+				<div style="font-weight: bold;">
+					<span>Time Left : </span>
+					<span id="count" style="margin-left: 15px;">0</span>
+				</div>
 				<span style="font-weight: bold;">Hp :</span><span id="hp"> </span><br/>
 				<span style="font-weight: bold;">Opponent Hp :</span><span id="oppHp"> </span><br/>
 				<span style="font-weight: bold;">Total bets :</span><span id="bets"></span><br/>
@@ -56,7 +63,7 @@
 		</div>
 		<br>
 		<br>
-		<div id="outputWrapper" style="overflow: auto; height: 50%">
+		<div id="outputWrapper" style="overflow: auto; height: 50%; display: none;">
 			<div id="output" style="height: 100%;"></div>
 		</div>
 
