@@ -256,10 +256,22 @@ function onMessage(evt)
 				}
 			}
 
-			if (!result.fold) 
-				logString += "You played : " + result.comb + "<br/>";
+			if (!result.fold) {
+				logString += "You played : " + result.comb ;
+				if (result.user_meta !== null) {
+					logString += `(${numToChar(result.user_meta)}) <br/>`;
+				} else {
+					logString += "<br/>";
+				}
+			}
+			
 			if (!result.opp_fold) {
-				logString += "Opponent played : " + result.opp_comb + "<br/>";
+				logString += "Opponent played : " + result.opp_comb;
+				if (result.opp_meta !== null) {
+					logString += `(${numToChar(result.opp_meta)}) <br/>`;
+				} else {
+					logString += "<br/>";
+				}
 			} else {
 				logString += "Opponent folded.<br/>";
 			}
@@ -298,6 +310,21 @@ function clearLog() {
 	logDiv.innerHTML = "";
 }
 
+// This function changes number to
+// trump card specific character e.g J, Q, K
+function numToChar(num) {
+	switch (String(num)) {
+		case "11":
+			return "J";
+		case "12":
+			return "Q";
+		case "13":
+			return "K";
+		default:
+			return num;
+	}
+}
+
 function updateState(stateObject) {
 	raiseBtn.textContent = "Raise";
 	state = stateObject.State[0];
@@ -313,6 +340,8 @@ function updateState(stateObject) {
 	else {
 		if (state === "Flop") {
 			outputDiv.textContent = "";
+			clearLog();
+			betsDiv.textContent = initial_bet;
 		}
 		timeOut();
 		disableButtons(false);
@@ -394,20 +423,7 @@ function getCardElem(cardObject) {
 			break;
 	}
 
-	switch (cardObject.number) {
-		case 11:
-			cardNumberText.textContent = "J";
-			break;
-		case 12:
-			cardNumberText.textContent = "Q";
-			break;
-		case 13:
-			cardNumberText.textContent = "K";
-			break;
-		default:
-			cardNumberText.textContent = cardObject.number;
-			break;
-	}
+	cardNumberText.textContent = numToChar(cardObject.number);
 
 	return wrapper;
 }
