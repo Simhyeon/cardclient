@@ -11,62 +11,77 @@
 				padding:0 !important;
 			}
 			
-			hr {
-				border-color: #ffffff;
+			.hr {
+				content: " ";
+				border: 1px solid gray;
+				margin-top: 15px;
+				margin-bottom: 15px;
+				display: block;
+				/* Override max-width to change width*/
+				max-width: 325px;
 			}
 
 			.netBtn {
 				height: 30px;
 				width: 150px;
 			}
+
+			pre {
+				margin: 0;
+			}
 		</style>
 	</head>
 	<body>
 		<h2 style="margin-top: 0; padding-top: 19.92px;">Card game</h2>
 
-		<div id="state" style="color: red; font-weight: bold; font-size: 30px; margin-bottom: 15px;">State</div>
+		<div id="state" style="color: red; font-weight: bold; font-size: 30px; margin-bottom: 15px; display: inline-block;">State</div>
+		<div style="font-weight: bold; display: inline-block; margin-left: 30px;">
+			<span>Time Left : </span>
+			<span id="count" style="margin-left: 5px;">0</span>
+		</div>
 		<div id="wrapper" style="display: flex;">
 			<div id="information" style="flex: 0 1 auto;">
 				<div id="interaction">
-					<button id="create" class="netBtn">Create Room</button>
-					<br/>
-					<button id="join" class="netBtn">Join Room</button>
-					<input class="netBtn" type="text" id="roomId" placeholder="Enter room id..."/>
-					<br/>
-					<button id="dis" class="netBtn">Disconnect</button>
+					<div style="display: flex;">
+						<button id="create" style="flex: 1 1 0%; margin-right: 10px; height: 30px;" class="">Create Room</button>
+						<button id="join" style="flex: 1 1 0%; height: 30px;" class="">Join Room</button>
+					</div>
+					<input style="display:inlin-block; margin-top: 10px;" class="netBtn" type="text" id="roomId" placeholder="Enter room id..."/>
+					<button id="copy" class="netBtn" data-clipboard-target="#roomId">Copy room id</button>
+					<button id="dis" style="display:block; margin-top: 10px; width: 100%;" class="netBtn">Disconnect</button>
 					<br>
 					<br>
-					<button id="check">Check</button>
-					<button id="raise">Raise</button>
-					<button id="fold">Fold</button>
+					<div style="display: flex;">
+						<button id="check" style="flex: 1 1 0%; margin-right: 10px; height: 30px;">Check</button>
+						<button id="raise" style="flex: 1 1 0%; margin-right: 10px; height: 30px;">Raise</button>
+						<button id="fold" style="flex: 1 1 0%; height: 30px;">Fold</button>
+					</div>
 				</div>
 
 				<hr>
-				<div id="logWrapper" style="overflow: auto; height: 100px; border: 1px solid gray">
+				<div id="logWrapper" style="overflow: auto; height: 100px; border: 1px solid gray; padding: 10px;">
 					<div id="log" style="height: 100%;"></div>
 				</div>
-			</div>
-			<div id="cards"  style="padding-left: 50px;">
-				<div style="font-weight: bold;">
-					<span>Time Left : </span>
-					<span id="count" style="margin-left: 15px;">0</span>
-				</div>
-				<span style="font-weight: bold;">Hp :</span><span id="hp"> </span><br/>
-				<span style="font-weight: bold;">Opponent Hp :</span><span id="oppHp"> </span><br/>
-				<span style="font-weight: bold;">Total bets :</span><span id="bets"></span><br/>
-				<hr>
-				<span style="font-weight: bold;">Community cards : </span><div id ="community"></div>
-				<hr>
-				<span style="font-weight: bold;">Hand cards : </span><div id ="hand"></div>
-				<hr>
 			</div>
 		</div>
 		<br>
 		<br>
+		<div id="stats">
+			<pre><span style="font-weight: bold;">Total bets	: </span><span id="bets"></span></pre>
+			<pre><span style="font-weight: bold;">Hp		: </span><span id="hp"> </span></pre>
+			<pre><span style="font-weight: bold;">Opponent Hp 	: </span><span id="oppHp"></span></pre>
+			<p class="hr"/>
+		</div>
+		<div id="cards">
+			<span style="font-weight: bold;">Community cards : </span><div id ="community"></div>
+			<span style="font-weight: bold;">Hand cards : </span><div id ="hand"></div>
+		</div>
 		<div id="outputWrapper" style="overflow: auto; height: 50%; display: none;">
 			<div id="output" style="height: 100%;"></div>
 		</div>
 
+		<!--Cdn should come before index.js-->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
 		<script src="index.js"></script>
 	</body>
 </html> 

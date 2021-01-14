@@ -4,6 +4,7 @@
 // This is updated from server.
 let bet_time = 14;
 let default_hp = 30;
+let initial_bet = 2; // Currently this is not given from server.
 const CREATE_ADDRESS = "ws://localhost:3030/create";
 const JOIN_ADDRESS = "ws://localhost:3030/join/";
 
@@ -40,7 +41,8 @@ let handDiv = document.querySelector("#hand");
 let createBtn = document.querySelector("#create");
 let joinBtn = document.querySelector("#join");
 let disBtn = document.querySelector("#dis");
-let roomIdDiv = document.querySelector("#roomId");
+let roomIdInput = document.querySelector("#roomId");
+let copyBtn = document.querySelector("#copy");
 
 let checkBtn = document.querySelector("#check");
 let raiseBtn = document.querySelector("#raise");
@@ -61,12 +63,13 @@ joinBtn.addEventListener('click', () => {
 	// TODO 
 	// If roomId is not empty, try connect
 	// If not deny.
-	if (roomIdDiv.value === "") {
+	if (roomIdInput.value === "") {
 		displayLog("No roomId is given to join");
 		return;
 	}
+	roomIdInput.readOnly = true;
 	clearLog();
-	let roomId = roomIdDiv.value;
+	let roomId = roomIdInput.value;
 	wsUri = JOIN_ADDRESS + roomId;
 	createSocket();
 	displayLog("Connected to room");
@@ -81,6 +84,10 @@ checkBtn.addEventListener('click', () => {
 	disableButtons(true);
 	websocket.send(JSON.stringify(obj));
 });
+
+copyBtn.addEventListener('click', () => {
+	copyBtn.textContent = "Copy room id ✓";
+}, false);
 
 raiseBtn.addEventListener('click', () => {
 	let obj; 
@@ -112,9 +119,14 @@ function CreateRequest(action, value) {
 
 function init()
 {
+	// Enable clipboard.
+	// This should require cdn script to be imported.
+	new ClipboardJS('#copy');
 	// Initialization
 	disableButtons(true);
 	disBtn.disabled = true;
+	betsDiv.textContent = initial_bet;
+
 	//hpDiv.textContent = default_hp;
 }
 
@@ -150,6 +162,7 @@ function onError(evt)
 {
 	writeToBackLog('<span style="color: red;">ERROR:</span> ' + evt.data);
 	displayLog("Failed to connect to server");
+	roomIdInput.readOnly = false;
 }
 
 function onClose(evt)
@@ -162,7 +175,7 @@ function onClose(evt)
 	createBtn.disabled = false;
 	joinBtn.disabled = false;
 	disBtn.disabled = true;
-	roomIdDiv.readOnly = false;
+	roomIdInput.readOnly = false;
 }
 
 function onMessage(evt)
@@ -179,8 +192,8 @@ function onMessage(evt)
 	switch (json.response_type) {
 		// Save State
 		case 'RoomId':
-			roomIdDiv.value = json.value.Message;
-			roomIdDiv.readOnly = true;
+			roomIdInput.value = json.value.Message;
+			roomIdInput.readOnly = true;
 			break;
 		case 'Env':
 			default_hp = json.value.Env.hp;
@@ -340,27 +353,63 @@ function updateHand(handCards) {
 }
 
 function getCardElem(cardObject) {
-	let elem = document.createElement("div");
-	elem.textContent = cardObject.card_type + " / " + cardObject.number;
+	let wrapper = document.createElement("div");
+	wrapper.style = "margin-right: 15px; display:inline-block;";
+	let parentElem = document.createElement("div");
+	parentElem.style = `
+		display: table-cell;
+		vertical-align: middle;
+		text-align: center;
+		width: 50px; 
+		height: 80px; 
+		color: black;
+		border-style: solid;
+		border-width: 2px;
+	`;
+	let cardTypeText = document.createElement("span");
+	let cardNumberText = document.createElement("span");
+	wrapper.appendChild(parentElem);
+	parentElem.appendChild(cardTypeText);
+	parentElem.appendChild(cardNumberText);
+
 	switch (cardObject.card_type) {
 		// Cases are all pascal case
 		case 'Spade':
-			elem.style= "color: #303030;";
+			parentElem.style.color = "black";
+			cardTypeText.textContent = "♠";
 			break;
 		case 'Heart':
-			elem.style= "color: red;";
+			parentElem.style.color = "red";
+			cardTypeText.textContent = "♥";
 			break;
 		case 'Diamond':
-			elem.style= "color: darkblue;";
+			parentElem.style.color = "blue";
+			cardTypeText.textContent = "♦";
 			break;
 		case 'Clover':
-			elem.style= "color: darkgreen;";
+			parentElem.style.color = "darkgreen";
+			cardTypeText.textContent = "♣";
 			break;
-		
 		default:
 			break;
 	}
-	return elem;
+
+	switch (cardObject.number) {
+		case 11:
+			cardNumberText.textContent = "J";
+			break;
+		case 12:
+			cardNumberText.textContent = "Q";
+			break;
+		case 13:
+			cardNumberText.textContent = "K";
+			break;
+		default:
+			cardNumberText.textContent = cardObject.number;
+			break;
+	}
+
+	return wrapper;
 }
 
 function displayTime() {
