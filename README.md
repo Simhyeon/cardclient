@@ -1,5 +1,6 @@
 #### Simple javascript card game client for demonstration
 
+demo : [youtube](https://youtu.be/eTygwHH1sW4)
 Card game server : [Server](https://github.com/simhyeon/cardserver)
 
 #### Game's rule
